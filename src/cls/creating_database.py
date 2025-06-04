@@ -7,8 +7,11 @@ from typing import Optional
 from src.cls.vacancy import Vacancy
 
 load_dotenv()
-DATA_BASE: str | None = os.getenv("database")
-PASSWORD: str | None = os.getenv("password")
+DATA_BASE: str = os.getenv("DATA_BASE", "")
+PASSWORD: str = os.getenv("PASSWORD", "")
+DB_USER: str = os.getenv("DB_USER")
+DB_HOST: str = os.getenv("DB_HOST")
+DB_PORT: str = os.getenv("DB_PORT")
 
 
 class DataBase:
@@ -23,7 +26,7 @@ class DataBase:
         """Устанавливает соединение с базой данных"""
         try:
             self._conn = psycopg2.connect(
-                host="localhost", database=DATA_BASE, user="postgres", password=PASSWORD, port="5432"
+                host=DB_HOST, database=DATA_BASE, user=DB_USER, password=PASSWORD, port=DB_PORT
             )
             self._cur = self._conn.cursor()
             self._conn.autocommit = True
@@ -53,6 +56,8 @@ class DataBase:
             description VARCHAR)
         """
         )
+        print("123")
+        self._conn.commit()
 
     def add_vacancy(self, list_vacancy: list[Vacancy]) -> None:
         """Добавляет список вакансий в таблицы organizations и vacancy"""
@@ -83,6 +88,27 @@ class DataBase:
             )
             # self.id_vacancy, self.name, self.address, self.salary_from,
             # self.salary_to, self.description, self.company_id
+
+    @staticmethod
+    def create_database() -> None:
+        """Создаёт базу данных"""
+        conn = psycopg2.connect(dbname="postgres", user=DB_USER, password=PASSWORD, host=DB_HOST, port=DB_PORT)
+        conn.autocommit = True
+        cur = conn.cursor()
+        try:
+            cur.execute(f"""SELECT FROM
+                pg_database
+                WHERE
+                datname = '{DATA_BASE}';
+                """)
+            exists = cur.fetchone()
+            if not exists:
+                cur.execute(f"CREATE DATABASE {DATA_BASE}")
+                print(f"База данных {DATA_BASE} создана")
+        except psycopg2.errors.DuplicateDatabase:
+            print(f"База данных {DATA_BASE} уже существует")
+        cur.close()
+        conn.close()
 
     def close(self) -> None:
         """Закрывает курсор и соединение с базой данных"""
