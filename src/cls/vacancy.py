@@ -149,16 +149,6 @@ class Vacancy:
             return int(id_vacancy)
         raise ValueError("id компании передан неверно")
 
-    def to_dict(self) -> dict:
-        """Преобразует вакансию в словарь"""
-        return {
-            "name": self.name,
-            "address": self.address,
-            "salary_from": self.salary_from,
-            "salary_to": self.salary_to,
-            "description": self.description,
-        }
-
     def __str__(self) -> str:
         """Переопределение метода __str__"""
         return (

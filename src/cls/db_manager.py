@@ -41,6 +41,7 @@ class DBManager(DataBase):
 
     def __enter__(self) -> "DBManager":
         """Контекстный менеджер: подключение к базе данных и создание таблиц"""
+        self.create_database()
         self.connect_db()
         self.crated_table()
         return self
@@ -55,6 +56,7 @@ class DBManager(DataBase):
         return self._cur
 
     def get_companies_and_vacancies_count(self) -> List[Tuple[str, int]]:
+        """Получает список всех компаний и количество вакансий у каждой компании."""
         cur = self._check_cursor()
         cur.execute(
             """
@@ -67,6 +69,8 @@ class DBManager(DataBase):
         return cast(List[Tuple[str, int]], result)
 
     def get_all_vacancies(self) -> List[Tuple[Any, ...]]:
+        """Получает список всех вакансий с указанием названия компании,
+        названия вакансии и зарплаты и ссылки на вакансию"""
         cur = self._check_cursor()
         cur.execute(
             """
@@ -79,6 +83,7 @@ class DBManager(DataBase):
         return cast(List[Tuple[Any, ...]], result)
 
     def get_avg_salary(self) -> float:
+        """Получает среднюю зарплату по вакансиям"""
         cur = self._check_cursor()
         cur.execute(
             """
@@ -91,6 +96,7 @@ class DBManager(DataBase):
         return float(result[0])
 
     def get_vacancies_with_higher_salary(self) -> List[Tuple[Any, ...]]:
+        """Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям"""
         avg_salary = self.get_avg_salary()
         cur = self._check_cursor()
         cur.execute("SELECT * FROM public.vacancy WHERE salary_to > %s", (avg_salary,))
@@ -98,6 +104,7 @@ class DBManager(DataBase):
         return cast(List[Tuple[Any, ...]], result)
 
     def get_vacancies_with_keyword(self, keyword: str) -> List[Tuple[Any, ...]]:
+        """Получает список всех вакансий, в названии которых содержатся переданные в метод слова"""
         cur = self._check_cursor()
         cur.execute("SELECT * FROM public.vacancy WHERE name ILIKE %s", (f"%{keyword}%",))
         result = cur.fetchall()
