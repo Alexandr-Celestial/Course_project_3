@@ -9,9 +9,9 @@ from src.cls.vacancy import Vacancy
 load_dotenv()
 DATA_BASE: str = os.getenv("DATA_BASE", "")
 PASSWORD: str = os.getenv("PASSWORD", "")
-DB_USER: str = os.getenv("DB_USER")
-DB_HOST: str = os.getenv("DB_HOST")
-DB_PORT: str = os.getenv("DB_PORT")
+DB_USER: str = os.getenv("DB_USER", "")
+DB_HOST: str = os.getenv("DB_HOST", "")
+DB_PORT: str = os.getenv("DB_PORT", "")
 
 
 class DataBase:
@@ -37,6 +37,8 @@ class DataBase:
         """Создаёт таблицы organizations и vacancy"""
         if self._cur is None:
             raise RuntimeError("Курсор не инициализирован. Вызовите connect_db() перед этим.")
+        if self._conn is None:
+            raise RuntimeError("Соединение с базой данных не инициализировано")
         self._cur.execute(
             """
         CREATE TABLE IF NOT EXISTS organizations (
@@ -56,7 +58,6 @@ class DataBase:
             description VARCHAR)
         """
         )
-        print("123")
         self._conn.commit()
 
     def add_vacancy(self, list_vacancy: list[Vacancy]) -> None:
@@ -96,11 +97,13 @@ class DataBase:
         conn.autocommit = True
         cur = conn.cursor()
         try:
-            cur.execute(f"""SELECT FROM
+            cur.execute(
+                f"""SELECT FROM
                 pg_database
                 WHERE
                 datname = '{DATA_BASE}';
-                """)
+                """
+            )
             exists = cur.fetchone()
             if not exists:
                 cur.execute(f"CREATE DATABASE {DATA_BASE}")

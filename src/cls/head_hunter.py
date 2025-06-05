@@ -16,13 +16,13 @@ EMPLOYER_ID = [
     4437201,
     5125017,
     710,
-    167893
+    167893,
 ]
 
 
 class HHBase(ABC):
     @abstractmethod
-    def get_vacancies(self, keyword: str) -> list: ...
+    def get_vacancies(self) -> list: ...
 
     """Абстрактный метод для получения списка вакансий по ключевому слову"""
 
@@ -30,6 +30,7 @@ class HHBase(ABC):
     def _connect_to_api(self) -> None: ...
 
     """Абстрактный метод для установки соединения с API"""
+
 
 class HH(HHBase):
     """
@@ -48,7 +49,7 @@ class HH(HHBase):
 
         self._connect_to_api()
         for emp_id in EMPLOYER_ID:
-            params: dict = {"text": '', "per_page": 100, "employer_id": emp_id}
+            params: dict = {"text": "", "per_page": 100, "employer_id": emp_id}
             response = self.__session.get(f"{self.BASE_URL}/vacancies", params=params)
             if response.status_code == 200:
                 vacancies = response.json()["items"]
